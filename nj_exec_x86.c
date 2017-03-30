@@ -1,4 +1,7 @@
 #if 0
+
+cant maximal munch if inbetween instruction is branch target
+
 nj_inst_nop
     emit(nop)
 

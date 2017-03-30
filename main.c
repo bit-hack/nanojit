@@ -3,7 +3,6 @@
 #include "buffer.h"
 #include "nanojit.h"
 
-#if 0
 /*
  * 0000  nj_inst_const   0
  * 0008  nj_inst_arg     0h
@@ -28,7 +27,6 @@
  * 0088  nj_inst_add
  * 008c  nj_inst_ret
  */
-#endif
 
 static int fibonacci(int n)
 {

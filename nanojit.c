@@ -6,7 +6,8 @@
 
 #include "buffer.h"
 #include "nanojit.h"
-#include "nj_types.h"
+#include "nanojit_impl.h"
+
 
 nj_cxt_t* nj_context_create()
 {

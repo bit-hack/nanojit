@@ -5,9 +5,12 @@ typedef struct nj_cxt_t nj_cxt_t;
 typedef struct nj_label_t nj_label_t;
 typedef struct nj_func_t nj_func_t;
 typedef struct nj_exe_t nj_exe_t;
+
 typedef void (*nj_syscall_t)(nj_exe_t* exe);
+
 typedef int32_t nj_int_t;
 typedef uint32_t nj_uint_t;
+typedef uintptr_t nj_ptr_t;
 
 struct nj_exe_t {
 #define NJ_STACK_SIZE 1024
