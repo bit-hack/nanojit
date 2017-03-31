@@ -1,32 +1,5 @@
 #include <stdio.h>
-
-#include "buffer.h"
-#include "nanojit.h"
-
-/*
- * 0000  nj_inst_const   0
- * 0008  nj_inst_arg     0h
- * 0010  nj_inst_eq
- * 0014  nj_inst_jmp     28h
- * 001c  nj_inst_const   0
- * 0024  nj_inst_ret
- * 0028  nj_inst_const   0
- * 0030  nj_inst_arg     0h
- * 0038  nj_inst_eq
- * 003c  nj_inst_jmp     50h
- * 0044  nj_inst_const   1
- * 004c  nj_inst_ret
- * 0050  nj_inst_arg     0h
- * 0058  nj_inst_const   2
- * 0060  nj_inst_sub
- * 0064  nj_inst_call    0h
- * 006c  nj_inst_arg     0h
- * 0074  nj_inst_const   1
- * 007c  nj_inst_sub
- * 0080  nj_inst_call    0h
- * 0088  nj_inst_add
- * 008c  nj_inst_ret
- */
+#include "../nj_lib/nanojit.h"
 
 static int fibonacci(int n)
 {

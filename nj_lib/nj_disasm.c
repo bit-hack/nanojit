@@ -28,6 +28,7 @@ static const char* nj_inst_name(nj_inst_t inst)
 {
     switch (inst) {
         NAME(nj_inst_nop)
+        NAME(nj_inst_label)
         NAME(nj_inst_const)
         NAME(nj_inst_fp)
         NAME(nj_inst_arg)
@@ -70,7 +71,7 @@ void nj_disasm_inst(const char* base, const char* ptr, nj_dasm_t* out)
 {
     assert(ptr && out);
     memset(out, 0, sizeof(nj_dasm_t));
-    out->addr_ = (uintptr_t)ptr - (uintptr_t)base;
+    out->addr_ = (nj_uint_t)((uintptr_t)ptr - (uintptr_t)base);
     out->size_ = sizeof(nj_inst_t);
     nj_inst_t inst;
     PTR_READ(ptr, inst);

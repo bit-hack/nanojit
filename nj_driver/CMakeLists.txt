@@ -1,0 +1,5 @@
+file(GLOB SOURCE_FILES *.c)
+file(GLOB HEADER_FILES *.h)
+add_executable(nj_driver ${SOURCE_FILES} ${HEADER_FILES})
+target_link_libraries(nj_driver nj_lib nj_exe_vm)
+# target_inlude_dir(.. TODO ..)

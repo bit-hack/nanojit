@@ -14,10 +14,10 @@ typedef uintptr_t nj_ptr_t;
 
 struct nj_exe_t {
 #define NJ_STACK_SIZE 1024
-    nj_uint_t stack[NJ_STACK_SIZE];
-    uint32_t sp_; // top of stack
-    uint32_t fp_; // current stack frame
-    uint8_t* pc_; // program counter
+    nj_int_t stack[NJ_STACK_SIZE];
+    nj_uint_t sp_; // top of stack
+    nj_uint_t fp_; // current stack frame
+    const uint8_t* pc_; // program counter
     nj_cxt_t* cxt_; // nanojit context
 };
 

@@ -41,7 +41,7 @@ static void buff_reserve(buffer_t* buf, size_t size)
         return;
     }
 
-    //TODO: if new_size is significantly less then old_size we can shrink
+    // TODO: if new_size is significantly less then old_size we can shrink
 
     if (new_size != buf->alloc_size_) {
         buf->data_ = realloc(buf->data_, new_size);
@@ -108,7 +108,7 @@ void buff_write(buffer_t* buf, const void* src, size_t size)
     buf->size_ = MAX2(old_size, new_size);
     // do the actual write
     uint8_t* dst = buf->data_ + buf->head_;
-    memcpy(dst, src, size); 
+    memcpy(dst, src, size);
     buf->head_ += size;
 }
 

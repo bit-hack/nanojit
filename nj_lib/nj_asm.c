@@ -23,7 +23,7 @@ static inline void nj_insert_fixup(nj_cxt_t* cxt, nj_uint_t* src)
     fixup->next_ = cxt->fixup_;
     cxt->fixup_ = fixup;
     // store the fixup information
-    fixup->dst_index_ = buff_head(cxt->code_);
+    fixup->dst_index_ = (nj_uint_t)buff_head(cxt->code_);
     fixup->src_ = src;
     // insert dummy pointer for fixup
     const nj_uint_t zero = 0u;
@@ -70,7 +70,7 @@ void nj_emit_debug(nj_cxt_t* cxt, const char* data, nj_uint_t size)
 {
     assert(cxt && data);
     // add debug data to debug section
-    nj_uint_t ptr = buff_head(cxt->code_);
+    nj_uint_t ptr = (nj_uint_t)buff_head(cxt->code_);
     buff_write(cxt->debug_, cxt->debug_, size);
     // emit debug opcode
     nj_emit_opcode(cxt, nj_inst_debug);
@@ -98,7 +98,7 @@ nj_func_t* nj_func_create(nj_cxt_t* cxt, const char* name)
 void nj_func_place(nj_func_t* func)
 {
     assert(func && func->cxt_ && (func->start_ == NJ_VOID_ADDR));
-    nj_uint_t loc = buff_head(func->cxt_->code_);
+    nj_uint_t loc = (nj_uint_t)buff_head(func->cxt_->code_);
     func->start_ = loc;
 }
 
@@ -137,7 +137,8 @@ void nj_label_place(nj_func_t* func, nj_label_t* label)
 {
     assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
     assert(label && label->start_ == NJ_VOID_ADDR);
-    label->start_ = buff_head(func->cxt_->code_);
+    label->start_ = (nj_uint_t)buff_head(func->cxt_->code_);
+    nj_emit_opcode(func->cxt_, nj_inst_label);
 }
 
 void nj_emit_add(nj_func_t* func)
