@@ -1,5 +1,6 @@
 #include "../nj_lib/nanojit_impl.h"
 
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,12 +19,14 @@ static nj_func_t* nj_find_func(nj_cxt_t* cxt, const char* name)
 
 static void nj_exe_push(nj_exe_t* exe, nj_int_t val)
 {
+    assert(exe->sp_<NJ_STACK_SIZE);
     exe->stack[exe->sp_] = val;
     ++exe->sp_;
 }
 
 static nj_int_t nj_exe_pop(nj_exe_t* exe)
 {
+    assert(exe->sp_>=exe->fp_);
     --exe->sp_;
     return exe->stack[exe->sp_];
 }
@@ -98,7 +101,7 @@ void nj_exe_vm_prepare(
         assert(!"TODO");                                                       \
     }
 
-void nj_exe_vm_run(nj_exe_t* exe)
+nj_int_t nj_exe_vm_run(nj_exe_t* exe)
 {
     assert(exe && exe->cxt_);
     nj_cxt_t* cxt = exe->cxt_;
@@ -108,22 +111,25 @@ void nj_exe_vm_run(nj_exe_t* exe)
         // read instruction opcode
         const uint8_t* new_pc = pc;
         const nj_inst_t opcode = nj_read_opcode(&new_pc);
+        // print a simple trace
+        printf("-> %s\n", nj_inst_name(opcode));
+        // dispatch to opcode handler
         switch (opcode) {
         case (nj_inst_nop):
-        case (nj_inst_label):
+        case (nj_inst_label): {
             /* no operation instructions */
-            break;
+        } break;
         case (nj_inst_const): {
             nj_int_t val = nj_read_imm(&new_pc);
             nj_exe_push(exe, val);
             break;
         }
-        case (nj_inst_fp):
+        case (nj_inst_fp): {
             nj_exe_push(exe, exe->fp_);
-            break;
+        } break;
         case (nj_inst_arg): {
             const nj_uint_t imm = nj_read_imm(&new_pc);
-            const nj_uint_t index = exe->fp_ - (2 + imm);
+            const nj_uint_t index = exe->fp_ - (3 + imm);
             const nj_int_t arg = exe->stack[index];
             nj_exe_push(exe, arg);
         } break;
@@ -139,58 +145,77 @@ void nj_exe_vm_run(nj_exe_t* exe)
             exe->stack[index] = nj_exe_pop(exe);
         } break;
         case (nj_inst_ret): {
+            // number of arguments to discard
+            const nj_uint_t imm = nj_read_imm(&new_pc);
+            // pop (temp) a return value
+            const nj_int_t ret_val = nj_exe_pop(exe);
+            // discard stack frame
             exe->sp_ = exe->fp_;
-            const nj_int_t addr = nj_exe_pop(exe);
-            new_pc = buff_data(cxt->code_, addr);
             exe->fp_ = nj_exe_pop(exe);
+            // pop return address
+            const nj_int_t addr = nj_exe_pop(exe);
             if (addr == NJ_VOID_ADDR) {
                 // end of execution
                 exe->pc_ = NULL;
-                return;
+                return ret_val;
             }
+            new_pc = buff_data(cxt->code_, addr);
+            // discard arguments passed to this func
+            assert(imm < exe->sp_);
+            exe->sp_ -= imm;
+            // push the return value
+            nj_exe_push(exe, ret_val);
         } break;
-        NJ_OP(nj_inst_add, exe, +);
-        NJ_OP(nj_inst_sub, exe, -);
-        NJ_OP(nj_inst_mul, exe, *);
-        NJ_OP(nj_inst_mod, exe, %);
-        NJ_OP(nj_inst_div, exe, /);
-        NJ_OP(nj_inst_shl, exe, <<);
+            NJ_OP(nj_inst_add, exe, +);
+            NJ_OP(nj_inst_sub, exe, -);
+            NJ_OP(nj_inst_mul, exe, *);
+            NJ_OP(nj_inst_mod, exe, %);
+            NJ_OP(nj_inst_div, exe, /);
+            NJ_OP(nj_inst_shl, exe, <<);
         case (nj_inst_shr): {
             const nj_int_t a = nj_exe_pop(exe);
             const nj_int_t b = nj_exe_pop(exe);
             nj_exe_push(exe, (nj_uint_t)b << (nj_uint_t)a);
+            break;
         } break;
-        NJ_OP(nj_inst_sra, exe, >>);
-        NJ_OP(nj_inst_and, exe, &);
+            NJ_OP(nj_inst_sra, exe, >>);
+            NJ_OP(nj_inst_and, exe, &);
         case (nj_inst_not): {
             const nj_int_t val = nj_exe_pop(exe);
             nj_exe_push(exe, ~val);
         } break;
-        NJ_OP(nj_inst_or, exe, |);
-        NJ_OP(nj_inst_xor, exe, ^);
+            NJ_OP(nj_inst_or, exe, |);
+            NJ_OP(nj_inst_xor, exe, ^);
         case (nj_inst_dup): {
             const nj_int_t val = nj_exe_peek(exe);
             nj_exe_push(exe, val);
         } break;
         case (nj_inst_pop): {
-            assert(exe->sp_>0);
-            exe->sp_--;
+            assert(exe->sp_ > 0);
+            --exe->sp_;
         } break;
-        NJ_OP(nj_inst_lt, exe, <);
-        NJ_OP(nj_inst_le, exe, <=);
-        NJ_OP(nj_inst_eq, exe, ==);
-        NJ_OP(nj_inst_ne, exe, !=);
-        NJ_OP(nj_inst_ge, exe, >=);
-        NJ_OP(nj_inst_gt, exe, >);
-        case (nj_inst_ld):
+            NJ_OP(nj_inst_lt, exe, <);
+            NJ_OP(nj_inst_le, exe, <=);
+            NJ_OP(nj_inst_eq, exe, ==);
+        case (nj_inst_ne): {
+            const nj_int_t a = nj_exe_pop(exe);
+            const nj_int_t b = nj_exe_pop(exe);
+            nj_exe_push(exe, b != a);
+        } break;
+            NJ_OP(nj_inst_ge, exe, >=);
+            NJ_OP(nj_inst_gt, exe, >);
+        case (nj_inst_ld): {
             TODO(); /* load from memory */
-            break;
-        case (nj_inst_st):
+        } break;
+        case (nj_inst_st): {
             TODO(); /* store to memory */
-            break;
-        case (nj_inst_jmp): {
+        } break;
+        case (nj_inst_cjmp): {
             const nj_int_t imm = nj_read_imm(&new_pc);
-            new_pc = buff_data(cxt->code_, imm);
+            const nj_int_t cnd = nj_exe_pop(exe);
+            if (cnd) {
+                new_pc = buff_data(cxt->code_, imm);
+            }
         } break;
         case (nj_inst_call): {
             // read branch target
@@ -225,4 +250,5 @@ void nj_exe_vm_run(nj_exe_t* exe)
         }
         pc = new_pc;
     }
+    return 0;
 }

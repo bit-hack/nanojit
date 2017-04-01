@@ -24,7 +24,7 @@
     case (X):                                                                  \
         return #X;
 
-static const char* nj_inst_name(nj_inst_t inst)
+const char* nj_inst_name(nj_inst_t inst)
 {
     switch (inst) {
         NAME(nj_inst_nop)
@@ -49,7 +49,7 @@ static const char* nj_inst_name(nj_inst_t inst)
         NAME(nj_inst_xor)
         NAME(nj_inst_dup)
         NAME(nj_inst_pop)
-        NAME(nj_inst_jmp)
+        NAME(nj_inst_cjmp)
         NAME(nj_inst_lt)
         NAME(nj_inst_le)
         NAME(nj_inst_eq)
@@ -90,8 +90,9 @@ void nj_disasm_inst(const char* base, const char* ptr, nj_dasm_t* out)
     case (nj_inst_ld):
     case (nj_inst_st):
     case (nj_inst_debug):
-    case (nj_inst_jmp):
+    case (nj_inst_cjmp):
     case (nj_inst_call):
+    case (nj_inst_ret):
     case (nj_inst_frame): {
         PTR_READ(ptr, out->immu_);
         out->size_ += sizeof(out->immu_);

@@ -32,7 +32,7 @@ typedef enum nj_inst_t {
     nj_inst_xor,
 
     nj_inst_dup, // duplicate top stack item
-    nj_inst_pop, // discard top stack item
+    nj_inst_pop, // discard items from stack
 
     nj_inst_lt, // stk[-1] < stk[0]
     nj_inst_le,
@@ -46,7 +46,8 @@ typedef enum nj_inst_t {
     /* store nj_int_t to memory */
     nj_inst_st,
 
-    nj_inst_jmp,
+    /* conditional jump */
+    nj_inst_cjmp,
     nj_inst_call,
     /* deallocate stack frame and preserve top most stack element */
     nj_inst_ret,
@@ -130,3 +131,6 @@ void nj_disasm_inst(const char* base, const char* ptr, nj_dasm_t* out);
 
 // return the size of a compiled function
 size_t nj_func_size(nj_cxt_t * cxt, nj_func_t * func);
+
+// return string name for a given instruction enumeration
+const char * nj_inst_name(nj_inst_t inst);

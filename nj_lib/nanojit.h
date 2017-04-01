@@ -76,8 +76,10 @@ void nj_emit_dup(nj_func_t* func);
 // discard top stack item
 void nj_emit_pop(nj_func_t* func);
 
+// unconditional jump to label
+// void nj_emit_jmp(nj_func_t* func, nj_label_t* label);
 // conditional jump to a label
-void nj_emit_jmp(nj_func_t* func, nj_label_t* label);
+void nj_emit_cjmp(nj_func_t* func, nj_label_t* label);
 
 // comparison
 void nj_emit_lt(nj_func_t* func);
@@ -98,7 +100,7 @@ void nj_emit_call(nj_func_t* func, nj_func_t* callee);
 void nj_emit_frame(nj_func_t* func, nj_uint_t size);
 
 // emit function return
-void nj_emit_ret(nj_func_t* func);
+void nj_emit_ret(nj_func_t* func, nj_uint_t nargs);
 
 // emit syscall
 void nj_emit_sys(nj_func_t* func, nj_syscall_t sys);
