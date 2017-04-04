@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct nj_cxt_t nj_cxt_t;
@@ -42,6 +43,7 @@ void nj_emit_debug(nj_cxt_t* cxt, const char* data, nj_uint_t size);
 // create a function
 nj_func_t* nj_func_create(nj_cxt_t* cxt, const char* name);
 void nj_func_place(nj_func_t* func);
+bool nj_func_is_placed(nj_func_t* func);
 
 // no operation instruction
 void nj_emit_nop(nj_func_t* func);
@@ -55,6 +57,7 @@ void nj_emit_fp(nj_func_t* func);
 // emit a jump target
 nj_label_t* nj_label_create(nj_func_t* func);
 void nj_label_place(nj_func_t* func, nj_label_t* label);
+bool nj_label_is_placed(nj_label_t* label);
 
 // arithmetic
 void nj_emit_add(nj_func_t* func);
@@ -69,15 +72,16 @@ void nj_emit_and(nj_func_t* func);
 void nj_emit_not(nj_func_t* func);
 void nj_emit_xor(nj_func_t* func);
 void nj_emit_or(nj_func_t* func);
+void nj_emit_lnot(nj_func_t* func);
 
 // duplicate top stack item
 void nj_emit_dup(nj_func_t* func);
 
 // discard top stack item
-void nj_emit_pop(nj_func_t* func);
+void nj_emit_pop(nj_func_t* func, nj_uint_t num);
 
 // unconditional jump to label
-// void nj_emit_jmp(nj_func_t* func, nj_label_t* label);
+void nj_emit_jmp(nj_func_t* func, nj_label_t* label);
 // conditional jump to a label
 void nj_emit_cjmp(nj_func_t* func, nj_label_t* label);
 
@@ -103,7 +107,7 @@ void nj_emit_frame(nj_func_t* func, nj_uint_t size);
 void nj_emit_ret(nj_func_t* func, nj_uint_t nargs);
 
 // emit syscall
-void nj_emit_sys(nj_func_t* func, nj_syscall_t sys);
+void nj_emit_syscall(nj_func_t* func, nj_syscall_t sys);
 
 // emit argument lookup
 void nj_emit_arg(nj_func_t* func, nj_uint_t index);

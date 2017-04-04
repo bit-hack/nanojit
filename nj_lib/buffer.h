@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 // the buffer object
 typedef struct buffer_t buffer_t;
@@ -35,5 +36,11 @@ void buff_write(buffer_t* buf, const void* src, size_t size);
 
 // read data from the buffer
 void buff_read(buffer_t* buf, void* dst, size_t size);
+
+// load and fill a buffer from a file on disk
+bool buff_load(buffer_t* buf, const char * path);
+
+// save a buffer to a file on disk
+bool buff_save(buffer_t* buf, const char * path);
 
 #endif // _BUFFER_H_

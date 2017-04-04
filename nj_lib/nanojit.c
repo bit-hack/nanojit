@@ -8,7 +8,6 @@
 #include "nanojit.h"
 #include "nanojit_impl.h"
 
-
 nj_cxt_t* nj_context_create()
 {
     nj_cxt_t* cxt = (nj_cxt_t*)malloc(sizeof(nj_cxt_t));

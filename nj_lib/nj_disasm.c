@@ -21,11 +21,13 @@
     }
 
 #define NAME(X)                                                                \
-    case (X):                                                                  \
-        return #X;
+    case (X): {                                                                \
+        name = #X;                                                             \
+    } break;
 
 const char* nj_inst_name(nj_inst_t inst)
 {
+    const char* name = NULL;
     switch (inst) {
         NAME(nj_inst_nop)
         NAME(nj_inst_label)
@@ -63,8 +65,9 @@ const char* nj_inst_name(nj_inst_t inst)
         NAME(nj_inst_ret)
         NAME(nj_inst_syscall)
     default:
-        return "";
+        break;
     }
+    return (name) ? (name + 8) : NULL;
 }
 
 void nj_disasm_inst(const char* base, const char* ptr, nj_dasm_t* out)
@@ -120,7 +123,7 @@ static const char* nj_dasm_inst_print(const char* base, const char* head)
     fprintf(stdout, "%-16s  ", dasm.name_);
     switch (dasm.flag_) {
     case (nj_inst_flag_immu_):
-        fprintf(stdout, "%xh", dasm.immu_);
+        fprintf(stdout, "h%x", dasm.immu_);
         break;
     case (nj_inst_flag_imms_):
         fprintf(stdout, "%d", dasm.imms_);

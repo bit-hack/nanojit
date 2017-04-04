@@ -8,7 +8,6 @@
 #include "nanojit.h"
 #include "nanojit_impl.h"
 
-
 static inline void nj_emit_opcode(nj_cxt_t* cxt, nj_inst_t opcode)
 {
     buff_write(cxt->code_, &opcode, sizeof(opcode));
@@ -45,11 +44,11 @@ void nj_finish(nj_cxt_t* cxt)
         buff_write(cxt->code_, fixup->src_, sizeof(nj_uint_t));
     }
     // reverse the function list
-    nj_func_t * list = NULL;
+    nj_func_t* list = NULL;
     while (cxt->func_) {
-        nj_func_t * func = cxt->func_;
+        nj_func_t* func = cxt->func_;
         // disconnect
-        nj_func_t * next = func->next_;
+        nj_func_t* next = func->next_;
         cxt->func_ = next;
         // reconnect
         func->next_ = list;
@@ -87,7 +86,7 @@ nj_func_t* nj_func_create(nj_cxt_t* cxt, const char* name)
     func->name_ = _strdup(name);
     // will be populated when the function is placed
     func->start_ = NJ_VOID_ADDR;
-//    func->end_ = NJ_VOID_ADDR;
+    //    func->end_ = NJ_VOID_ADDR;
     // insert into the linked list
     func->next_ = cxt->func_;
     cxt->func_ = func;
@@ -219,10 +218,20 @@ void nj_emit_dup(nj_func_t* func)
     nj_emit_opcode(func->cxt_, nj_inst_dup);
 }
 
-void nj_emit_pop(nj_func_t* func)
+void nj_emit_pop(nj_func_t* func, nj_uint_t num)
 {
     assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
     nj_emit_opcode(func->cxt_, nj_inst_pop);
+    assert(func->cxt_->code_);
+    buff_write(func->cxt_->code_, &num, sizeof(num));
+}
+
+void nj_emit_jmp(nj_func_t* func, nj_label_t* label)
+{
+    assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
+    assert(label);
+    nj_emit_opcode(func->cxt_, nj_inst_jmp);
+    nj_insert_fixup(func->cxt_, &(label->start_));
 }
 
 void nj_emit_cjmp(nj_func_t* func, nj_label_t* label)
@@ -305,7 +314,7 @@ void nj_emit_ret(nj_func_t* func, nj_uint_t num_args)
     buff_write(func->cxt_->code_, &num_args, sizeof(num_args));
 }
 
-void nj_emit_sys(nj_func_t* func, nj_syscall_t sys)
+void nj_emit_syscall(nj_func_t* func, nj_syscall_t sys)
 {
     assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
     assert(sys);
@@ -333,4 +342,22 @@ void nj_emit_lset(nj_func_t* func, nj_uint_t index)
     assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
     nj_emit_opcode(func->cxt_, nj_inst_lset);
     buff_write(func->cxt_->code_, &index, sizeof(index));
+}
+
+void nj_emit_lnot(nj_func_t* func)
+{
+    assert(func && func->cxt_ && (func->start_ != NJ_VOID_ADDR));
+    nj_emit_opcode(func->cxt_, nj_inst_lnot);
+}
+
+bool nj_func_is_placed(nj_func_t* func)
+{
+    assert(func);
+    return func->start_ != NJ_VOID_ADDR;
+}
+
+bool nj_label_is_placed(nj_label_t* label)
+{
+    assert(label);
+    return label->start_ != NJ_VOID_ADDR;
 }

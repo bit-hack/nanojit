@@ -3,6 +3,7 @@
 #include "buffer.h"
 
 typedef enum nj_inst_t {
+    nj_inst_unknown,
     /* no operation */
     nj_inst_nop,
     /* marks a branch target. acts as a barrier for maximal munch codegen. */
@@ -27,9 +28,11 @@ typedef enum nj_inst_t {
     nj_inst_shr,
     nj_inst_sra,
     nj_inst_and,
-    nj_inst_not,
-    nj_inst_or,
     nj_inst_xor,
+    nj_inst_or,
+
+    nj_inst_not, // bitwize not
+    nj_inst_lnot, // logical not
 
     nj_inst_dup, // duplicate top stack item
     nj_inst_pop, // discard items from stack
@@ -46,6 +49,8 @@ typedef enum nj_inst_t {
     /* store nj_int_t to memory */
     nj_inst_st,
 
+    /* unconditional jump */
+    nj_inst_jmp,
     /* conditional jump */
     nj_inst_cjmp,
     nj_inst_call,

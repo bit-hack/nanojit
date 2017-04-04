@@ -1,7 +1,7 @@
 #include "../nj_lib/nanojit_impl.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,14 +19,14 @@ static nj_func_t* nj_find_func(nj_cxt_t* cxt, const char* name)
 
 static void nj_exe_push(nj_exe_t* exe, nj_int_t val)
 {
-    assert(exe->sp_<NJ_STACK_SIZE);
+    assert(exe->sp_ < NJ_STACK_SIZE);
     exe->stack[exe->sp_] = val;
     ++exe->sp_;
 }
 
 static nj_int_t nj_exe_pop(nj_exe_t* exe)
 {
-    assert(exe->sp_>=exe->fp_);
+    assert(exe->sp_ >= exe->fp_);
     --exe->sp_;
     return exe->stack[exe->sp_];
 }
@@ -180,6 +180,10 @@ nj_int_t nj_exe_vm_run(nj_exe_t* exe)
         } break;
             NJ_OP(nj_inst_sra, exe, >>);
             NJ_OP(nj_inst_and, exe, &);
+        case (nj_inst_lnot): {
+            const nj_int_t val = nj_exe_pop(exe);
+            nj_exe_push(exe, !val);
+        } break;
         case (nj_inst_not): {
             const nj_int_t val = nj_exe_pop(exe);
             nj_exe_push(exe, ~val);
@@ -191,8 +195,9 @@ nj_int_t nj_exe_vm_run(nj_exe_t* exe)
             nj_exe_push(exe, val);
         } break;
         case (nj_inst_pop): {
-            assert(exe->sp_ > 0);
-            --exe->sp_;
+            nj_uint_t count = nj_read_imm(&new_pc);
+            assert(exe->sp_ >= count);
+            exe->sp_ -= count;
         } break;
             NJ_OP(nj_inst_lt, exe, <);
             NJ_OP(nj_inst_le, exe, <=);
@@ -204,11 +209,17 @@ nj_int_t nj_exe_vm_run(nj_exe_t* exe)
         } break;
             NJ_OP(nj_inst_ge, exe, >=);
             NJ_OP(nj_inst_gt, exe, >);
+#if 0
         case (nj_inst_ld): {
             TODO(); /* load from memory */
         } break;
         case (nj_inst_st): {
             TODO(); /* store to memory */
+        } break;
+#endif
+        case (nj_inst_jmp): {
+            const nj_int_t imm = nj_read_imm(&new_pc);
+            new_pc = buff_data(cxt->code_, imm);
         } break;
         case (nj_inst_cjmp): {
             const nj_int_t imm = nj_read_imm(&new_pc);

@@ -1,8 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "buffer.h"
 
 #define MAX2(A, B) (((A) > (B)) ? (A) : (B))
 #define MIN_SIZE 512u
@@ -26,6 +30,16 @@ static uint64_t NPOT(uint64_t in)
     in |= in >> 16u;
     in |= in >> 32u;
     return ++in;
+}
+
+// return the size of a file
+static size_t fsize(FILE* fd)
+{
+    const long p = ftell(fd);
+    fseek(fd, 0, SEEK_END);
+    const size_t size = ftell(fd);
+    fseek(fd, p, SEEK_SET);
+    return size;
 }
 
 // make sure the buffer has at least 'size' bytes in it
@@ -128,4 +142,38 @@ uintptr_t buff_head(buffer_t* buf)
 {
     assert(buf);
     return buf->head_;
+}
+
+bool buff_load(buffer_t* b, const char* path)
+{
+    assert(path && b);
+    FILE* fd = fopen(path, "rb");
+    if (fd == NULL) {
+        return false;
+    }
+    const size_t size = fsize(fd);
+    buff_resize(b, size + 1);
+    char* dst = buff_data(b, 0);
+    if (fread(dst, 1, size, fd) != size) {
+        fclose(fd);
+        return false;
+    }
+    fclose(fd);
+    dst[size] = '\0';
+    return true;
+}
+
+bool buff_save(buffer_t* b, const char* path)
+{
+    assert(b && path);
+    FILE* fd = fopen(path, "wb");
+    if (fd == NULL) {
+        return false;
+    }
+    const void* data = buff_data(b, 0);
+    assert(data);
+    const size_t size = buff_size(b);
+    size_t ret = fwrite(data, 1, size, fd);
+    fclose(fd);
+    return ret == size;
 }
